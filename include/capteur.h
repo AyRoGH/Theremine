@@ -34,6 +34,9 @@ long long Capteur::getDistance(void)
     while (echo);
     timer.stop();
 
+    // The duration is divided by 58 to convert time (in microseconds) to distance (in cm).
+    // This is derived from the speed of sound (approx. 343 m/s or 29.15 us/cm).
+    // The pulse travels to the object and back, so effective speed is 58.3 us/cm.
     return timer.elapsed_time().count() / 58;
 }
 

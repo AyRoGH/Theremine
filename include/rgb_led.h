@@ -27,7 +27,7 @@ public:
 };
 
 RGBLed::RGBLed(PinName pin_red, PinName pin_green, PinName pin_blue)
-    : RLed(pin_red), GLed(pin_blue), BLed(pin_blue)
+    : RLed(pin_red), GLed(pin_green), BLed(pin_blue)
 {
     RLed = 0;
     GLed = 0;

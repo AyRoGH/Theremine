@@ -24,15 +24,21 @@ public:
 
 };
 
-Buzzer::Buzzer(PinName pin_buzzer) : buzzer(pin_buzzer) {}
+Buzzer::Buzzer(PinName pin_buzzer) : buzzer(pin_buzzer), is_muted(false) {}
 
 void Buzzer::handledMute(void)
 {
-    if (is_muted)
-        buzzer.write(0.0f);
-    else
-    is_muted = false;
-        buzzer.write(0.25f); // Gamme 3 = 0.1, gamme 4 et 5 = 0.25
+    if (is_muted) {
+        buzzer.write(0.0f); // Maintain mute
+    } else {
+        buzzer.write(0.25f); // Set to a default play volume (e.g., for gamme 4/5)
+    }
+}
+
+void Buzzer::setMuteState(bool mute_state)
+{
+    is_muted = mute_state;
+    handledMute(); // Apply the state immediately
 }
 
 void Buzzer::play(Note note)

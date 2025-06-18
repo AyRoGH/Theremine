@@ -11,9 +11,6 @@ class Buzzer
 private:
 
     PwmOut buzzer;
-    bool is_muted;
-
-    void handledMute(void);
 
 public:
 
@@ -24,27 +21,24 @@ public:
 
 };
 
-Buzzer::Buzzer(PinName pin_buzzer) : buzzer(pin_buzzer), is_muted(false) {}
-
-void Buzzer::handledMute(void)
-{
-    if (is_muted) {
-        buzzer.write(0.0f); // Maintain mute
-    } else {
-        buzzer.write(0.25f); // Set to a default play volume (e.g., for gamme 4/5)
-    }
-}
-
-void Buzzer::setMuteState(bool mute_state)
-{
-    is_muted = mute_state;
-    handledMute(); // Apply the state immediately
-}
+Buzzer::Buzzer(PinName pin_buzzer) : buzzer(pin_buzzer) {}
 
 void Buzzer::play(Note note)
 {
     buzzer.period(1.0f / note.getFreq());
-    buzzer.write(0.25f);
+    switch (note.gamme)
+    {
+        case Note::G3:
+            buzzer.write(0.1f);
+            break;
+        case Note::G4:
+        case Note::G5:
+            buzzer.write(0.25f);
+            break;
+        default:
+            buzzer.write(0.25f);
+            break;
+    }
 }
 
 void Buzzer::mute(void)

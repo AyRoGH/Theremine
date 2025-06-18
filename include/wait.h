@@ -3,9 +3,6 @@
 
 #include "mbed.h"
 
-// For new development or consistency with Mbed OS RTOS features,
-// consider using mbed::ThisThread::sleep_for(chrono::milliseconds(ms))
-// and mbed::ThisThread::sleep_for(chrono::seconds(s)).
 void wait_ms(int ms) {
     wait_us(ms * 1000);
 }

@@ -18,11 +18,12 @@ public:
     {
         RED, GREEN, BLUE,
         MAGENTA, YELLOW, CYAN,
-        WHITE
+        WHITE, BLACK
     };
 
     RGBLed(PinName pin_red, PinName pin_green, PinName pin_blue);
-    void setColor(RGBLed::color color);
+
+    RGBLed& operator=(color c);
 
 };
 
@@ -34,49 +35,36 @@ RGBLed::RGBLed(PinName pin_red, PinName pin_green, PinName pin_blue)
     BLed = 0;
 }
 
-void RGBLed::setColor(RGBLed::color color)
+RGBLed& RGBLed::operator=(color c)
 {
-    switch (color)
+    switch (c)
     {
         case RED:
-            RLed = 1;
-            GLed = 0;
-            BLed = 0;
+            RLed = 1; GLed = 0; BLed = 0;
             break;
         case GREEN:
-            RLed = 0;
-            GLed = 1;
-            BLed = 0;
+            RLed = 0; GLed = 1; BLed = 0;
             break;
         case BLUE:
-            RLed = 0;
-            GLed = 0;
-            BLed = 1;
+            RLed = 0; GLed = 0; BLed = 1;
             break;
         case MAGENTA:
-            RLed = 1;
-            GLed = 0;
-            BLed = 1;
+            RLed = 1; GLed = 0; BLed = 1;
             break;
         case YELLOW:
-            RLed = 1;
-            GLed = 1;
-            BLed = 0;
+            RLed = 1; GLed = 1; BLed = 0;
             break;
         case CYAN:
-            RLed = 0;
-            GLed = 1;
-            BLed = 1;
+            RLed = 0; GLed = 1; BLed = 1;
             break;
         case WHITE:
-            RLed = 1;
-            GLed = 1;
-            BLed = 1;
+            RLed = 1; GLed = 1; BLed = 1; 
+            break;
+        case BLACK:
+            RLed = 0; GLed = 0; BLed = 0;
             break;
     }
-
-    return;
+    return *this;
 }
-
 
 #endif /* __RGB_LED_H__ */

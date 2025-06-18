@@ -13,14 +13,11 @@ Capteur volumeCapt(p6, p5);
 Buzzer buzzer(p21);
 Resistance resistance(p22, p24, p23);
 LedVolume ledVolume(p15, p16, p17, p18, p19, p20);
-RGBLed ledGamme(NC, NC, NC);
+RGBLed ledGamme(p25, p26, p27);
 Teremine teremine(gammeCapt, noteCapt, volumeCapt, resistance, buzzer, ledVolume, ledGamme);
 
 int main(void)
 {
-    long long noteDist = 0ULL;
-    long long gammeDist = 0ULL;
-    long long volumeDist = 0ULL;
 
     printf("\n===================\n\n");
 

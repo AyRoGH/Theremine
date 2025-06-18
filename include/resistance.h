@@ -35,13 +35,16 @@ void Resistance::setValue(uint8_t new_wiper_pos)
         return;
     }
 
+    uint8_t target_pos = new_wiper_pos;
+    uint8_t starting_pos = wiper_pos; // Store original position
+
     CS = 0;
     wait_ns(200);
 
-    if (wiper_pos < new_wiper_pos) {
+    if (wiper_pos < target_pos) {
         UD = 1;
         wait_ns(100); // tDI >= 50 ns
-        for (; wiper_pos < new_wiper_pos; wiper_pos++) {
+        for (; wiper_pos < target_pos; wiper_pos++) {
             INC = 1;
             wait_us(10); // >> 250 ns (tIH)
             INC = 0;
@@ -53,7 +56,7 @@ void Resistance::setValue(uint8_t new_wiper_pos)
     else {
         UD = 0;
         wait_ns(100); // tDI >= 50 ns
-        for (; wiper_pos > new_wiper_pos; wiper_pos--) {
+        for (; wiper_pos > target_pos; wiper_pos--) {
             INC = 1;
             wait_us(10); // >> 250 ns
             INC = 0;
@@ -69,6 +72,11 @@ void Resistance::setValue(uint8_t new_wiper_pos)
     CS = 1;
     wait_ms(6);   // > tWR (~5 ms)
 
+    // Verify we reached the target position
+    if (wiper_pos != target_pos) {
+        // If we didn't reach target, reset to a known state
+        wiper_pos = starting_pos;
+    }
 }
 
 #endif // __RESISTANCE_H__

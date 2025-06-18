@@ -10,7 +10,8 @@
 #include "rgb_led.h"
 #include "wait.h"
 
-Note default_note(Note::LA, Note::G4, Note::UNSPECIFIED);
+// Move default_note inside the class to avoid global variable in header
+static const Note default_note(Note::LA, Note::G4, Note::UNSPECIFIED);
 
 class Teremine
 {
@@ -34,7 +35,7 @@ private:
     const int dist_btw_gamme = 10;      // Distance range per gamme/octave (cm)
     // Note: Max note distance = capt_min_dist + dist_btw_note * nb_note_per_gamme
     // Note: Max gamme distance = capt_min_dist + dist_btw_gamme * nb_gamme
-    // Note: Max volume distance = capt_min_dist + nb_volume (this seems to be the logic from cycle())
+    // Note: Max volume distance = capt_min_dist + nb_volume
 
     bool is_first_volume_set = false;
 
@@ -45,7 +46,7 @@ public:
     Teremine(Capteur gamme, Capteur note, Capteur volume, Resistance resistance, Buzzer buzzer, LedVolume ledVolume, RGBLed ledGamme);
 
     void cycle(void);
-    void play_note(Note note, char volume);
+    void play_note(Note note, unsigned char volume);
 
 };
 
@@ -56,15 +57,12 @@ Teremine::Teremine(Capteur gamme, Capteur note, Capteur volume, Resistance resis
 void Teremine::cycle(void)
 {
 
-    // Consider adding a filter (e.g., moving average) to stabilize sensor readings
     long long note_dist = note.getDistance();
-    // Consider adding a filter (e.g., moving average) to stabilize sensor readings
     long long gamme_dist = gamme.getDistance();
-    // Consider adding a filter (e.g., moving average) to stabilize sensor readings
     long long volume_dist = volume.getDistance();
     int note_idx;
     int gamme_idx;
-    int volume;
+    unsigned char volume;
     Note::Name note_played;
     Note::Gamme gamme_played;
     char name[5] = {0};
@@ -81,7 +79,8 @@ void Teremine::cycle(void)
     {
         note_idx = (note_dist - capt_min_dist) / dist_btw_note;
         gamme_idx = (gamme_dist - capt_min_dist) / dist_btw_gamme;
-        volume = volume_dist - capt_min_dist;
+        
+        volume = volume_dist >= capt_min_dist ? volume_dist - capt_min_dist : nb_volume;
 
         switch (note_idx)
         {
@@ -145,9 +144,9 @@ void Teremine::cycle(void)
     return;
 }
 
-void Teremine::play_note(Note note, char volume)
+void Teremine::play_note(Note note, unsigned char volume)
 {
-    if (is_first_volume_set && volume >= 0 && volume <= 32)
+    if (is_first_volume_set && volume < nb_volume)
     {
         resistance.setValue(volume);
         ledVolume.setValue(volume);
@@ -165,23 +164,24 @@ void Teremine::play_note(Note note, char volume)
         buzzer.play(note);
         switch (note.gamme) {
             case Note::G3:
-                ledGamme.setColor(RGBLed::RED);
+                ledGamme = RGBLed::RED;
                 break;
             case Note::G4:
-                ledGamme.setColor(RGBLed::GREEN);
+                ledGamme = RGBLed::GREEN;
                 break;
             case Note::G5:
-                ledGamme.setColor(RGBLed::BLUE);
+                ledGamme = RGBLed::BLUE;
                 break;
-            // Consider adding a default case for ledGamme or ensuring all gammes are covered
+            default:
+                ledGamme = RGBLed::BLACK;
+                break;
         }
     }
 
-    if (note.duration == Note::UNSPECIFIED) {
+    if (note.duration == Note::UNSPECIFIED)
         wait_ms(Note::NOIRE);
-    } else {
+    else
         wait_ms(note.duration);
-    }
 
     prev_note = note;
 }

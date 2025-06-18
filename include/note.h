@@ -47,13 +47,16 @@ public:
         G5 = +12  // Octave 5 (12 semitones above G4)
     };
 
-    const Name note;
-    const Gamme gamme;
-    const Duration duration;
+    Name note;
+    Gamme gamme;
+    Duration duration;
 
     Note(Name n, Gamme g, Duration d);
     float getFreq(void);
     void getName(char str[5]);
+
+    bool operator==(const Note &other) const;
+    Note& operator=(const Note &other);
 
 };
 
@@ -94,7 +97,7 @@ void Note::getName(char str[5])
             break;
         case SOL:
             str[0] = 'S';
-            str[1] = '0';
+            str[1] = 'O';
             str[2] = 'L';
             gamme_idx = 3;
             break;
@@ -107,7 +110,6 @@ void Note::getName(char str[5])
             str[1] = 'I';
             break;
         default:
-            // Should not happen with enum, but good practice
             break;
     }
 
@@ -123,7 +125,6 @@ void Note::getName(char str[5])
             str[gamme_idx] = '5';
             break;
         default:
-            // Should not happen with enum, but good practice
             break;
     }
 
@@ -131,6 +132,20 @@ void Note::getName(char str[5])
         str[3] = ' ';
 
     return;
+}
+
+bool Note::operator==(const Note &other) const
+{
+    return (this->freq == other.freq) && (this->duration == other.duration);
+}
+
+Note& Note::operator=(const Note &other)
+{
+    this->note = other.note;
+    this->gamme = other.gamme;
+    this->duration = other.duration;
+    this->freq = other.freq;
+    return *this;
 }
 
 #endif // __NOTE_H__

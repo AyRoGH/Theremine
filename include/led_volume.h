@@ -28,26 +28,20 @@ public:
         d6 = 0;
     }
 
-    void setValue(char volume)
-    {
-        char value;
+    void setValue(char volume_char) { // Renamed to avoid conflict with member
+        unsigned char volume = static_cast<unsigned char>(volume_char); // Cast for safety if char is signed
+        unsigned char value_to_set = 0; // Renamed to avoid conflict
+        if (volume < 6) value_to_set = 0;
+        else if (volume < 10) value_to_set = 1;
+        else if (volume < 14) value_to_set = 2;
+        else if (volume < 18) value_to_set = 3;
+        else if (volume < 22) value_to_set = 4;
+        else if (volume < 26) value_to_set = 5;
+        else if (volume <= 32) value_to_set = 6; // Max volume 32 maps to 6 LEDs
+        else value_to_set = 0; // Default for out of range (e.g. negative if char was signed and unhandled)
 
-        if (volume >= 0 && volume < 6)
-            value = 0;
-        else if (volume >= 6 && volume < 10)
-            value = 1;
-        else if (volume >= 10 && volume < 14)
-            value = 2;
-        else if (volume >= 14 && volume < 18)
-            value = 3;
-        else if (volume >= 18 && volume < 22)
-            value = 4;
-        else if (volume >= 22 && volume < 26)
-            value = 5;
-        else if (volume >= 26 && volume <= 32)
-            value = 6;
-
-        switch (value)
+        // The switch statement remains the same but uses value_to_set
+        switch (value_to_set)
         {
             case 0:
                 d1 = 0;

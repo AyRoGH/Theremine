@@ -43,11 +43,11 @@ void Resistance::setValue(uint8_t new_wiper_pos)
         wait_ns(100); // tDI >= 50 ns
         for (; wiper_pos < new_wiper_pos; wiper_pos++) {
             INC = 1;
-            wait_ms(1); // >> 250 ns (tIH)
+            wait_us(10); // >> 250 ns (tIH)
             INC = 0;
-            wait_ms(1); // >> 250 ns (tIL)
+            wait_us(10); // >> 250 ns (tIL)
             INC = 1;
-            wait_ms(1);
+            wait_us(10);
         }
     }
     else {
@@ -55,11 +55,11 @@ void Resistance::setValue(uint8_t new_wiper_pos)
         wait_ns(100); // tDI >= 50 ns
         for (; wiper_pos > new_wiper_pos; wiper_pos--) {
             INC = 1;
-            wait_ms(1); // >> 250 ns
+            wait_us(10); // >> 250 ns
             INC = 0;
-            wait_ms(1); // >> 250 ns
+            wait_us(10); // >> 250 ns
             INC = 1;
-            wait_ms(1);
+            wait_us(10);
         }
     }
 

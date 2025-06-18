@@ -18,13 +18,13 @@ public:
 
     enum Name
     {
-        DO = -9,
-        RE = -7,
-        MI = -5,
-        FA = -4,
-        SOL = -2,
-        LA = 0,
-        SI = 2,
+        DO = -9,  // Semitones from LA4
+        RE = -7,  // Semitones from LA4
+        MI = -5,  // Semitones from LA4
+        FA = -4,  // Semitones from LA4
+        SOL = -2, // Semitones from LA4
+        LA = 0,   // Reference note (A)
+        SI = 2,   // Semitones from LA4
     };
 
     enum Duration
@@ -42,9 +42,9 @@ public:
 
     enum Gamme
     {
-        G3 = -12,
-        G4 = 0,
-        G5 = +12
+        G3 = -12, // Octave 3 (12 semitones below G4)
+        G4 = 0,   // Reference octave 4
+        G5 = +12  // Octave 5 (12 semitones above G4)
     };
 
     const Name note;
@@ -106,6 +106,9 @@ void Note::getName(char str[5])
             str[0] = 'S';
             str[1] = 'I';
             break;
+        default:
+            // Should not happen with enum, but good practice
+            break;
     }
 
     switch (gamme)
@@ -118,6 +121,9 @@ void Note::getName(char str[5])
             break;
         case G5:
             str[gamme_idx] = '5';
+            break;
+        default:
+            // Should not happen with enum, but good practice
             break;
     }
 

@@ -25,14 +25,16 @@ private:
     LedVolume ledVolume;
     RGBLed ledGamme;
 
-    const int capt_min_dist = 5;
+    const int capt_min_dist = 5;        // Minimum reliable distance for sensors (cm)
+    const int nb_note_per_gamme = 7;    // Number of notes in one octave/gamme (Do, Re, Mi, Fa, Sol, La, Si)
+    const int nb_gamme = 3;             // Number of available gammes/octaves
+    const int nb_volume = 32;           // Max value for volume mapping (0-31 for resistance)
 
-    const int nb_note_per_gamme = 7;
-    const int nb_gamme = 3;
-    const int nb_volume = 32;
-
-    const int dist_btw_note = 4;
-    const int dist_btw_gamme = 10;
+    const int dist_btw_note = 4;        // Distance range per note (cm)
+    const int dist_btw_gamme = 10;      // Distance range per gamme/octave (cm)
+    // Note: Max note distance = capt_min_dist + dist_btw_note * nb_note_per_gamme
+    // Note: Max gamme distance = capt_min_dist + dist_btw_gamme * nb_gamme
+    // Note: Max volume distance = capt_min_dist + nb_volume (this seems to be the logic from cycle())
 
     bool is_first_volume_set = false;
 
@@ -54,8 +56,11 @@ Teremine::Teremine(Capteur gamme, Capteur note, Capteur volume, Resistance resis
 void Teremine::cycle(void)
 {
 
+    // Consider adding a filter (e.g., moving average) to stabilize sensor readings
     long long note_dist = note.getDistance();
+    // Consider adding a filter (e.g., moving average) to stabilize sensor readings
     long long gamme_dist = gamme.getDistance();
+    // Consider adding a filter (e.g., moving average) to stabilize sensor readings
     long long volume_dist = volume.getDistance();
     int note_idx;
     int gamme_idx;
@@ -64,12 +69,13 @@ void Teremine::cycle(void)
     Note::Gamme gamme_played;
     char name[5] = {0};
 
+    // Validate sensor readings and map to specific behaviors if out of expected range
     if (note_dist < capt_min_dist || note_dist > capt_min_dist + dist_btw_note * nb_note_per_gamme)
-        note_dist = 0;
+        note_dist = 0; // Treat out-of-range for note as no note detected
     if (gamme_dist < capt_min_dist || gamme_dist > capt_min_dist + dist_btw_gamme * nb_gamme)
-        gamme_dist = 0;
+        gamme_dist = 0; // Treat out-of-range for gamme as no gamme detected
     if (volume_dist < capt_min_dist || volume_dist > capt_min_dist + nb_volume)
-        volume_dist = -1;
+        volume_dist = -1; // Treat out-of-range for volume as invalid/unreliable
 
     if (note_dist && gamme_dist)
     {
@@ -100,6 +106,10 @@ void Teremine::cycle(void)
             case 6:
                 note_played = Note::SI;
                 break;
+            default:
+                // Invalid note_idx, play a default note
+                note_played = Note::LA;
+                break;
         }
 
         switch (gamme_idx)
@@ -112,6 +122,10 @@ void Teremine::cycle(void)
                 break;
             case 2:
                 gamme_played = Note::G5;
+                break;
+            default:
+                // Invalid gamme_idx, play a default gamme
+                gamme_played = Note::G4;
                 break;
         }
 
@@ -145,54 +159,31 @@ void Teremine::play_note(Note note, char volume)
         is_first_volume_set = true;
     }
 
-    if (note.getFreq() != prev_note.getFreq())
-    {
-        if (note.duration == Note::UNSPECIFIED)
-        {
-            buzzer.play(note);
+    bool note_changed = (note.getFreq() != prev_note.getFreq());
 
-            switch (note.gamme)
-            {
-                case Note::G3:
-                    ledGamme.setColor(RGBLed::RED);
-                    break;
-                case Note::G4:
-                    ledGamme.setColor(RGBLed::GREEN);
-                    break;
-                case Note::G5:
-                    ledGamme.setColor(RGBLed::BLUE);
-                    break;
-            }
-
-            wait_ms(Note::NOIRE);
-        }
-        else
-        {
-            buzzer.play(note);
-
-            switch (note.gamme)
-            {
-                case Note::G3:
-                    ledGamme.setColor(RGBLed::RED);
-                    break;
-                case Note::G4:
-                    ledGamme.setColor(RGBLed::GREEN);
-                    break;
-                case Note::G5:
-                    ledGamme.setColor(RGBLed::BLUE);
-                    break;
-            }
-            
-            wait_ms(note.duration);
+    if (note_changed) {
+        buzzer.play(note);
+        switch (note.gamme) {
+            case Note::G3:
+                ledGamme.setColor(RGBLed::RED);
+                break;
+            case Note::G4:
+                ledGamme.setColor(RGBLed::GREEN);
+                break;
+            case Note::G5:
+                ledGamme.setColor(RGBLed::BLUE);
+                break;
+            // Consider adding a default case for ledGamme or ensuring all gammes are covered
         }
     }
-    else
-    {
-        if (note.duration == Note::UNSPECIFIED)
-            wait_ms(Note::NOIRE);
-        else
-            wait_ms(note.duration);
+
+    if (note.duration == Note::UNSPECIFIED) {
+        wait_ms(Note::NOIRE);
+    } else {
+        wait_ms(note.duration);
     }
+
+    prev_note = note;
 }
 
 #endif // __TEREMINE_H__

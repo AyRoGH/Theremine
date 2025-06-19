@@ -33,8 +33,6 @@ void Buzzer::play(Note note)
             break;
         case Note::G4:
         case Note::G5:
-            buzzer.write(0.25f);
-            break;
         default:
             buzzer.write(0.25f);
             break;

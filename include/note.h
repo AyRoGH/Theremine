@@ -56,6 +56,7 @@ public:
     void getName(char str[5]);
 
     bool operator==(const Note &other) const;
+    bool operator!=(const Note &other) const;
     Note& operator=(const Note &other);
 
 };
@@ -135,6 +136,11 @@ void Note::getName(char str[5])
 }
 
 bool Note::operator==(const Note &other) const
+{
+    return (this->freq == other.freq) && (this->duration == other.duration);
+}
+
+bool Note::operator!=(const Note &other) const
 {
     return (this->freq == other.freq) && (this->duration == other.duration);
 }

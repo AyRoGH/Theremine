@@ -14,7 +14,7 @@ Buzzer buzzer(p21);
 Resistance resistance(p22, p24, p23);
 LedVolume ledVolume(p15, p16, p17, p18, p19, p20);
 RGBLed ledGamme(p25, p26, p27);
-Teremine teremine(gammeCapt, noteCapt, volumeCapt, resistance, buzzer, ledVolume, ledGamme);
+Theremine theremine(gammeCapt, noteCapt, volumeCapt, resistance, buzzer, ledVolume, ledGamme);
 
 int main(void)
 {
@@ -23,7 +23,7 @@ int main(void)
 
     while (true)
     {
-        teremine.cycle();
+        theremine.cycle();
     }
 
 }

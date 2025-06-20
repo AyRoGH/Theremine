@@ -18,13 +18,18 @@ public:
 
     enum Name
     {
-        DO = -9,  // Semitones from LA4
-        RE = -7,  // Semitones from LA4
-        MI = -5,  // Semitones from LA4
-        FA = -4,  // Semitones from LA4
-        SOL = -2, // Semitones from LA4
-        LA = 0,   // Reference note (A)
-        SI = 2,   // Semitones from LA4
+        DO = -9,
+        DO_DIEZE = -8,
+        RE = -7,
+        RE_DIEZE = -6,
+        MI = -5,
+        FA = -4,
+        FA_DIEZE = -3,
+        SOL = -2,
+        SOL_DIEZE = -1,
+        LA = 0,
+        LA_DIEZE = 1,
+        SI = 2
     };
 
     enum Gamme
@@ -57,9 +62,9 @@ float Note::getFreq(void)
     return freq;
 }
 
-void Note::getName(char str[5])
+void Note::getName(char str[6])
 {
-    int gamme_idx = 2;
+    int gamme_idx = 3;
 
     if (!str)
         return;
@@ -69,32 +74,66 @@ void Note::getName(char str[5])
         case DO:
             str[0] = 'D';
             str[1] = '0';
+            str[2] = ' ';
+            break;
+        case DO_DIEZE:
+            str[0] = 'D';
+            str[1] = '0';
+            str[2] = '#';
             break;
         case RE:
             str[0] = 'R';
             str[1] = 'E';
+            str[2] = ' ';
+            break;
+        case RE_DIEZE:
+            str[0] = 'R';
+            str[1] = 'E';
+            str[2] = '#';
             break;
         case MI:
             str[0] = 'M';
             str[1] = 'I';
+            str[2] = ' ';
             break;
         case FA:
             str[0] = 'F';
             str[1] = 'A';
+            str[2] = ' ';
+            break;
+        case FA_DIEZE:
+            str[0] = 'F';
+            str[1] = 'A';
+            str[2] = '#';
             break;
         case SOL:
             str[0] = 'S';
             str[1] = 'O';
             str[2] = 'L';
-            gamme_idx = 3;
+            str[3] = ' ';
+            gamme_idx = 4;
+            break;
+        case SOL_DIEZE:
+            str[0] = 'S';
+            str[1] = 'O';
+            str[2] = 'L';
+            str[3] = '#';
+            gamme_idx = 4;
             break;
         case LA:
             str[0] = 'L';
             str[1] = 'A';
+            str[2] = ' ';
+            break;
+        case LA_DIEZE:
+            str[0] = 'L';
+            str[1] = 'A';
+            str[2] = '#';
             break;
         case SI:
             str[0] = 'S';
             str[1] = 'I';
+            str[2] = ' ';
             break;
         default:
             break;
@@ -115,8 +154,8 @@ void Note::getName(char str[5])
             break;
     }
 
-    if (gamme_idx == 2)
-        str[3] = ' ';
+    if (gamme_idx == 3)
+        str[4] = ' ';
 
     return;
 }
@@ -128,7 +167,7 @@ bool Note::operator==(const Note &other) const
 
 bool Note::operator!=(const Note &other) const
 {
-    return (this->freq == other.freq);
+    return (this->freq != other.freq);
 }
 
 Note& Note::operator=(const Note &other)

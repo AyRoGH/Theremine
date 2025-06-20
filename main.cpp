@@ -18,10 +18,12 @@ Theremine theremine(gammeCapt, noteCapt, volumeCapt, resistance, buzzer, ledVolu
 
 int main(void)
 {
+    unsigned char res_value = 0U;
 
     printf("\n===================\n\n");
 
     ledGamme = RGBLed::WHITE;
+    ledVolume.setValue(31);
 
     while (true)
     {

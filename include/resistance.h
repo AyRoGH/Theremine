@@ -7,6 +7,7 @@
 
 class Resistance
 {
+    
 private:
 
     DigitalOut UD;
@@ -18,8 +19,8 @@ private:
 public:
 
     Resistance(PinName pin_UD, PinName pin_INC, PinName pin_CS);
-    void setValue(uint8_t new_wiper_pos);
     void reset();
+    void setValue(uint8_t new_wiper_pos);
 };
 
 Resistance::Resistance(PinName pin_UD, PinName pin_INC, PinName pin_CS)
@@ -32,41 +33,45 @@ Resistance::Resistance(PinName pin_UD, PinName pin_INC, PinName pin_CS)
 
 void Resistance::setValue(uint8_t new_wiper_pos)
 {
-    if (new_wiper_pos > 31) {
+    if (new_wiper_pos > 31 || new_wiper_pos == wiper_pos)
         return;
-    }
-
-    uint8_t target_pos = new_wiper_pos;
 
     CS = 0;
-    wait_us(1); // Ensure CS setup time
-
-    if (wiper_pos < target_pos) {
+    wait_ns(200);
+    
+    if (wiper_pos < new_wiper_pos)
+    {
         UD = 1;
-        wait_us(1); // Ensure direction setup time
-        for (; wiper_pos < target_pos; wiper_pos++) {
-            INC = 0;
-            wait_us(1);
+        wait_ns(100); // tDI >= 50 ns
+
+        for (; wiper_pos < new_wiper_pos; wiper_pos++)
+        {
             INC = 1;
-            wait_us(1);
+            wait_ms(1); // >> 250 ns (tIH)
+
+            INC = 0;
+            wait_ms(1); // >> 250 ns (tIL)
         }
     }
-    else if (wiper_pos > target_pos) {
+    else
+    {
         UD = 0;
-        wait_us(1); // Ensure direction setup time
-        for (; wiper_pos > target_pos; wiper_pos--) {
-            INC = 0;
-            wait_us(1);
+        wait_ns(100); // tDI >= 50 ns
+
+        for (; wiper_pos > new_wiper_pos; wiper_pos--)
+        {
             INC = 1;
-            wait_us(1);
+            wait_ms(1); // >> 250 ns (tIH)
+
+            INC = 0;
+            wait_ms(1); // >> 250 ns (tIL)
         }
     }
+    INC = 1;
+    wait_ns(100);
 
     CS = 1;
-    wait_ms(10);   // Ensure write time
-
-    // Force position update for reliability
-    wiper_pos = target_pos;
+    wait_ms(6);   // > tWR (~5 ms)
 }
 
 void Resistance::reset()

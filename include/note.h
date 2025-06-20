@@ -27,19 +27,6 @@ public:
         SI = 2,   // Semitones from LA4
     };
 
-    enum Duration
-    {
-        UNSPECIFIED = 0,
-        DOUBLE_CROCHE = 250 * DURATION_COEF,
-        CROCHE = 500 * DURATION_COEF,
-        CROCHE_POINTE = 750 * DURATION_COEF,
-        NOIRE = 1000 * DURATION_COEF,
-        NOIRE_POINTE = 1500 * DURATION_COEF,
-        BLANCHE = 2000 * DURATION_COEF,
-        BLANCHE_POINTE = 3000 * DURATION_COEF,
-        RONDE = 4000 * DURATION_COEF
-    };
-
     enum Gamme
     {
         G3 = -12, // Octave 3 (12 semitones below G4)
@@ -49,9 +36,8 @@ public:
 
     Name note;
     Gamme gamme;
-    Duration duration;
 
-    Note(Name n, Gamme g, Duration d);
+    Note(Name n, Gamme g);
     float getFreq(void);
     void getName(char str[5]);
 
@@ -61,7 +47,7 @@ public:
 
 };
 
-Note::Note(Name n, Gamme g, Duration d) : note(n), gamme(g), duration(d)
+Note::Note(Name n, Gamme g) : note(n), gamme(g)
 {
     freq = 440.0f * powf(2.0f, (float)(n + g) / 12.0f);
 }
@@ -137,19 +123,18 @@ void Note::getName(char str[5])
 
 bool Note::operator==(const Note &other) const
 {
-    return (this->freq == other.freq) && (this->duration == other.duration);
+    return (this->freq == other.freq);
 }
 
 bool Note::operator!=(const Note &other) const
 {
-    return (this->freq == other.freq) && (this->duration == other.duration);
+    return (this->freq == other.freq);
 }
 
 Note& Note::operator=(const Note &other)
 {
     this->note = other.note;
     this->gamme = other.gamme;
-    this->duration = other.duration;
     this->freq = other.freq;
     return *this;
 }

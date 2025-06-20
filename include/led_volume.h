@@ -31,22 +31,22 @@ public:
     void setValue(unsigned char volume) {
         unsigned char value_to_set = 0;
 
-        if (volume < 6)
+        if (volume == 0)
             value_to_set = 0;
-        else if (volume < 10)
+        else if (volume < 4)
             value_to_set = 1;
-        else if (volume < 14)
+        else if (volume < 8)
             value_to_set = 2;
-        else if (volume < 18)
+        else if (volume < 13)
             value_to_set = 3;
-        else if (volume < 22)
+        else if (volume < 19)
             value_to_set = 4;
         else if (volume < 26)
             value_to_set = 5;
         else if (volume <= 31)
             value_to_set = 6;
         else
-            value_to_set = 0; // Default for out of range
+            value_to_set = 6;
 
         switch (value_to_set)
         {

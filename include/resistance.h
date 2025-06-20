@@ -19,6 +19,7 @@ public:
 
     Resistance(PinName pin_UD, PinName pin_INC, PinName pin_CS);
     void setValue(uint8_t new_wiper_pos);
+    void reset();
 };
 
 Resistance::Resistance(PinName pin_UD, PinName pin_INC, PinName pin_CS)
@@ -31,52 +32,48 @@ Resistance::Resistance(PinName pin_UD, PinName pin_INC, PinName pin_CS)
 
 void Resistance::setValue(uint8_t new_wiper_pos)
 {
-    if (new_wiper_pos > 31 || new_wiper_pos == wiper_pos) {
+    if (new_wiper_pos > 31) {
         return;
     }
 
     uint8_t target_pos = new_wiper_pos;
-    uint8_t starting_pos = wiper_pos; // Store original position
 
     CS = 0;
-    wait_ns(200);
+    wait_us(1); // Ensure CS setup time
 
     if (wiper_pos < target_pos) {
         UD = 1;
-        wait_ns(100); // tDI >= 50 ns
+        wait_us(1); // Ensure direction setup time
         for (; wiper_pos < target_pos; wiper_pos++) {
-            INC = 1;
-            wait_us(10); // >> 250 ns (tIH)
             INC = 0;
-            wait_us(10); // >> 250 ns (tIL)
+            wait_us(1);
             INC = 1;
-            wait_us(10);
+            wait_us(1);
         }
     }
-    else {
+    else if (wiper_pos > target_pos) {
         UD = 0;
-        wait_ns(100); // tDI >= 50 ns
+        wait_us(1); // Ensure direction setup time
         for (; wiper_pos > target_pos; wiper_pos--) {
-            INC = 1;
-            wait_us(10); // >> 250 ns
             INC = 0;
-            wait_us(10); // >> 250 ns
+            wait_us(1);
             INC = 1;
-            wait_us(10);
+            wait_us(1);
         }
     }
-
-    INC = 1;
-    wait_ns(100);
 
     CS = 1;
-    wait_ms(6);   // > tWR (~5 ms)
+    wait_ms(10);   // Ensure write time
 
-    // Verify we reached the target position
-    if (wiper_pos != target_pos) {
-        // If we didn't reach target, reset to a known state
-        wiper_pos = starting_pos;
-    }
+    // Force position update for reliability
+    wiper_pos = target_pos;
+}
+
+void Resistance::reset()
+{
+    // Force reset to position 0
+    wiper_pos = 31; // Set to max so setValue(0) will definitely work
+    setValue(0);    // Reset to minimum position
 }
 
 #endif // __RESISTANCE_H__

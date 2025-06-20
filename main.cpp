@@ -21,9 +21,10 @@ int main(void)
 
     printf("\n===================\n\n");
 
+    ledGamme = RGBLed::WHITE;
+
     while (true)
     {
         theremine.cycle();
     }
-
 }

@@ -10,7 +10,7 @@
 #include "rgb_led.h"
 #include "wait.h"
 
-#define MESURE_MOYENNE 1
+#define MESURE_MOYENNE 0
 
 class Theremine
 {
@@ -33,8 +33,6 @@ private:
     const int dist_btw_note = 4;
     const int dist_btw_gamme = 10;
 
-    bool is_first_volume_set = false;
-
     static const Note default_note;
 
     Note prev_note = default_note;
@@ -43,7 +41,7 @@ private:
     static const Note::Gamme note_gamme_selector[3];
     static const RGBLed::color rgb_led_color_selector[3];
 
-    long long getDistance(Capteur capt);
+    unsigned char last_volume = 25U;
 
 public:
 
@@ -54,7 +52,7 @@ public:
 
 };
 
-const Note Theremine::default_note(Note::LA, Note::G4, Note::UNSPECIFIED);
+const Note Theremine::default_note(Note::LA, Note::G4);
 
 const Note::Name Theremine::note_name_selector[7] = {Note::DO, Note::RE, Note::MI, Note::FA, Note::SOL, Note::LA, Note::SI};
 const Note::Gamme Theremine::note_gamme_selector[3] = {Note::G3, Note::G4, Note::G5};
@@ -62,30 +60,16 @@ const RGBLed::color Theremine::rgb_led_color_selector[3] = {RGBLed::RED, RGBLed:
 
 Theremine::Theremine(Capteur gamme, Capteur note, Capteur volume, Resistance resistance, Buzzer buzzer, LedVolume ledVolume, RGBLed ledGamme)
     : gammeCapt(gamme), noteCapt(note), volumeCapt(volume), resistance(resistance), buzzer(buzzer), ledVolume(ledVolume), ledGamme(ledGamme)
-{}
-
-long long Theremine::getDistance(Capteur capt)
 {
-    long long measure1 = capt.getDistance();
-    wait_ms(25);
-    long long measure2 = capt.getDistance();
-    wait_ms(25);
-    long long measure3 = capt.getDistance();
-
-    return (measure1 + measure2 + measure3) / 3;
+    // Initialize resistance to a known state
+    this->resistance.reset();
+    wait_ms(100); // Let the system stabilize
 }
-
 void Theremine::cycle(void)
 {
-    #if MESURE_MOYENNE == 0
     long long note_dist = noteCapt.getDistance();
     long long gamme_dist = gammeCapt.getDistance();
     long long volume_dist = volumeCapt.getDistance();
-    #else
-    long long note_dist = this->getDistance(noteCapt);
-    long long gamme_dist = this->getDistance(gammeCapt);
-    long long volume_dist = this->getDistance(volumeCapt);
-    #endif
     int note_idx;
     int gamme_idx;
     unsigned char volume;
@@ -98,19 +82,25 @@ void Theremine::cycle(void)
         note_dist = 0; // Treat out-of-range for note as no note detected
     if (gamme_dist < capt_min_dist || gamme_dist > capt_min_dist + dist_btw_gamme * nb_gamme)
         gamme_dist = 0; // Treat out-of-range for gamme as no gamme detected
-    if (volume_dist < capt_min_dist || volume_dist > capt_min_dist + nb_volume)
-        volume_dist = -1; // Treat out-of-range for volume as invalid/unreliable
 
     if (note_dist && gamme_dist)
     {
         note_idx = (note_dist - capt_min_dist) / dist_btw_note;
         gamme_idx = (gamme_dist - capt_min_dist) / dist_btw_gamme;
-        volume = volume_dist >= capt_min_dist ? volume_dist - capt_min_dist : nb_volume;
+        
+        if (volume_dist < capt_min_dist)
+            volume = 0;
+        else if (volume_dist > capt_min_dist + nb_volume - 1)
+            volume = nb_volume - 1;
+        else {
+            int raw_volume = volume_dist - capt_min_dist;
+            volume = raw_volume;
+        }
 
         note_played = note_name_selector[note_idx];
         gamme_played = note_gamme_selector[gamme_idx];
 
-        Note curr_note(note_played, gamme_played, Note::UNSPECIFIED);
+        Note curr_note(note_played, gamme_played);
 
         play_note(curr_note, volume);
         curr_note.getName(name);
@@ -120,36 +110,24 @@ void Theremine::cycle(void)
     else
         buzzer.mute();
 
-    wait_ms(250);
+    wait_ms(50);
 
     return;
 }
 
 void Theremine::play_note(Note note, unsigned char volume)
 {
-    if (is_first_volume_set && volume < nb_volume)
-    {
-        resistance.setValue(volume);
-        ledVolume.setValue(volume);
-    }
-    else if (!is_first_volume_set)
-    {
-        resistance.setValue(25); // Default value
-        ledVolume.setValue(25); // Default value
-        is_first_volume_set = true;
-    }
+    resistance.setValue(volume);
+    ledVolume.setValue(volume);
+    last_volume = volume;
 
     bool note_changed = (note != prev_note);
 
-    if (note_changed) {
+    if (note_changed)
+    {
         buzzer.play(note);
         ledGamme = rgb_led_color_selector[(note.gamme / 12) + 1];
     }
-
-    if (note.duration == Note::UNSPECIFIED)
-        wait_ms(Note::NOIRE);
-    else
-        wait_ms(note.duration);
 
     prev_note = note;
 }

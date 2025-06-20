@@ -121,9 +121,7 @@ void Theremine::play_note(Note note, unsigned char volume)
     ledVolume.setValue(volume);
     last_volume = volume;
 
-    bool note_changed = (note != prev_note);
-
-    if (note_changed)
+    if (note != prev_note)
     {
         buzzer.play(note);
         ledGamme = rgb_led_color_selector[(note.gamme / 12) + 1];
